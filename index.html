@@ -21,9 +21,11 @@
                 
                 <div class="top-stats">
                     <div class="data-controls">
+                        <a href="#" id="instructions-link" class="btn btn-ghost btn-sm" style="text-decoration:none; display:flex; align-items:center; gap:5px;">📖 Instructions</a>
                         <button id="export-btn" class="btn btn-secondary btn-sm" title="Backup Data">💾 Export</button>
                         <button id="import-btn" class="btn btn-secondary btn-sm" title="Restore Data">📂 Import</button>
                         <input type="file" id="import-file" style="display:none" accept=".json">
+                        <button id="factory-reset-btn" class="btn btn-ghost btn-sm" style="color:var(--danger)" title="Wipe All Data">🧹 Reset All</button>
                         <button id="reset-stats-btn" class="btn btn-ghost btn-sm" title="Reset Stats">↺ Clear Stats</button>
                     </div>
                     <div class="theme-selector">
@@ -67,8 +69,15 @@
                                     <div class="form-stack">
                                         <div class="input-group">
                                             <label>Server</label>
-                                            <input type="text" id="server" placeholder="e.g. Chernarus 1" required>
-                                            <datalist id="server-list"></datalist>
+                                            <select id="server" class="theme-dropdown" style="width: 100%; padding: 0.6rem; background: var(--surface-light); border: 1px solid var(--border); border-radius: 4px; color: black; font-weight: bold;">
+                                                <option value="" disabled selected>Select Server</option>
+                                                <option value="Cherno 1">Cherno 1</option>
+                                                <option value="Cherno 2">Cherno 2</option>
+                                                <option value="Cherno 3">Cherno 3</option>
+                                                <option value="LUX">LUX</option>
+                                                <option value="Pripyat">Pripyat</option>
+                                                <option value="Deer Isle">Deer Isle</option>
+                                            </select>
                                         </div>
                                         <div class="input-row">
                                             <div class="input-group">
@@ -168,7 +177,13 @@
                                 </div>
                             </div>
                             <div class="module-body crafter-container">
-                                <div class="discord-toolbar">
+                                <div class="discord-toolbar" style="flex-wrap: wrap;">
+                                    <div class="tool-group">
+                                        <button type="button" onclick="formatDiscord('h1')" title="Large Header">H1</button>
+                                        <button type="button" onclick="formatDiscord('h2')" title="Medium Header">H2</button>
+                                        <button type="button" onclick="formatDiscord('h3')" title="Small Header">H3</button>
+                                    </div>
+                                    <div class="divider"></div>
                                     <div class="tool-group">
                                         <button type="button" onclick="formatDiscord('bold')" title="Bold">B</button>
                                         <button type="button" onclick="formatDiscord('italic')" title="Italic">I</button>
@@ -177,12 +192,22 @@
                                     <div class="divider"></div>
                                     <div class="tool-group">
                                         <button type="button" onclick="addEmoji('🚕')">🚕</button>
+                                        <button type="button" onclick="addEmoji('🚁')">🚁</button>
                                         <button type="button" onclick="addEmoji('📍')">📍</button>
                                         <button type="button" onclick="addEmoji('💨')">💨</button>
                                         <button type="button" onclick="addEmoji('✅')">✅</button>
+                                        <button type="button" onclick="addEmoji('🔔')">🔔</button>
+                                        <button type="button" onclick="addEmoji('📢')">📢</button>
+                                        <button type="button" onclick="addEmoji('🛡️')">🛡️</button>
+                                        <button type="button" onclick="addEmoji('💰')">💰</button>
+                                        <button type="button" onclick="addEmoji('🛠️')">🛠️</button>
+                                        <button type="button" onclick="addEmoji('⌛')">⌛</button>
+                                        <button type="button" onclick="addEmoji('🛑')">🛑</button>
                                     </div>
                                 </div>
-                                <textarea id="discord-input" placeholder="Draft your custom message here..."></textarea>
+                                <textarea id="discord-input" placeholder="Draft your custom message here..." style="min-height: 120px;"></textarea>
+                                <div class="preview-header" style="margin-top: 1rem; font-size: 0.7rem; font-weight: 800; color: var(--text-label); text-transform: uppercase;">Message Preview</div>
+                                <div id="discord-preview" class="discord-preview-box" style="margin-top: 0.5rem; padding: 1rem; background: var(--bg-sidebar); border: 1px solid var(--border-color); border-radius: 8px; min-height: 100px; color: white; white-space: pre-wrap; font-family: 'Inter', sans-serif;"></div>
                             </div>
                             <div class="module-footer">
                                 <button id="copy-discord-btn" class="btn btn-discord">Copy for Discord</button>
@@ -195,6 +220,43 @@
                     </footer>
             </div>
         </main>
+    </div>
+    <div id="instructions-modal" class="modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:1000; align-items:center; justify-content:center;">
+        <div class="modal-content" style="background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:2rem; width:90%; max-width:600px; max-height:80vh; overflow-y:auto; box-shadow:0 10px 30px rgba(0,0,0,0.5);">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
+                <h2 style="margin:0;">How to use Taxi Logger</h2>
+                <button id="close-modal-btn" style="background:none; border:none; font-size:1.5rem; color:var(--text-label); cursor:pointer;">×</button>
+            </div>
+            <div id="instructions-body" style="line-height:1.6; color:var(--text-main);">
+                <p>Welcome to the ultimate taxi dispatch system! Here's how to run your service:</p>
+                <div style="display:grid; gap:1.2rem; margin-top:1rem;">
+                    <div style="display:flex; gap:12px;">
+                        <span style="background:var(--primary); color:black; width:24px; height:24px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-weight:bold;">1</span>
+                        <div><strong>Set the Stage</strong>: Select your server first (e.g., "Cherno 2", "Pripyat" or "LUX"). The system will then automatically load the correct towns and POIs for that map.</div>
+                    </div>
+                    <div style="display:flex; gap:12px;">
+                        <span style="background:var(--primary); color:black; width:24px; height:24px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-weight:bold;">2</span>
+                        <div><strong>Log the Fare</strong>: Enter the pickup, dropoff, and player names. Hit <strong>Generate Trip</strong> to format the details for dispatch.</div>
+                    </div>
+                    <div style="display:flex; gap:12px;">
+                        <span style="background:var(--primary); color:black; width:24px; height:24px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-weight:bold;">3</span>
+                        <div><strong>Dispatch to Discord</strong>: Click <strong>Copy to Clipboard</strong> in the Output module, then paste it directly into your Discord taxi channel. 🚕💨</div>
+                    </div>
+                    <div style="display:flex; gap:12px;">
+                        <span style="background:var(--primary); color:black; width:24px; height:24px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-weight:bold;">4</span>
+                        <div><strong>Broadcast In-Game</strong>: Copy status updates from the <strong>In Game Ads</strong> section, then paste them directly into the in-game chat to alert survivors.</div>
+                    </div>
+                    <div style="display:flex; gap:12px;">
+                        <span style="background:var(--primary); color:black; width:24px; height:24px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-weight:bold;">5</span>
+                        <div><strong>Track Progress</strong>: Your trips are automatically logged to the history and stats panel, so you can track your earnings and activity.</div>
+                    </div>
+                </div>
+                <div style="margin-top:2rem; padding:1.2rem; background:var(--surface-light); border:1px solid var(--border); border-radius:8px; text-align:center;">
+                    <p style="margin-bottom:0.8rem; font-weight:700; font-size:1.1rem; color:var(--primary);">📺 Video Tutorial Ready?</p>
+                    <a href="taxilogger.mkv" target="_blank" style="display:inline-block; padding:0.6rem 1.2rem; background:var(--primary); color:black; border-radius:6px; font-weight:bold; text-decoration:none; transition:transform 0.2s;">Watch the Full Walkthrough</a>
+                </div>
+            </div>
+        </div>
     </div>
     <script src="script.js"></script>
 </body>
