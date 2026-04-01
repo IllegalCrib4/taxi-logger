@@ -405,15 +405,22 @@ function saveTrip(content, count, isAppend = false) {
 }
 
 function updateStatsUI() {
-    const now = Date.now();
-    const dayMs = 86400000;
-    const weekMs = dayMs * 7;
-    const monthMs = dayMs * 30;
+    const now = new Date();
+    
+    // Start of today (00:00:00)
+    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+    
+    // Start of this week (assuming Sunday as first day)
+    const sunday = now.getDate() - now.getDay();
+    const weekStart = new Date(now.getFullYear(), now.getMonth(), sunday).getTime();
+    
+    // Start of this month
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
 
     const stats = {
-        daily: tripLog.filter(l => now - l.ts < dayMs).reduce((a, b) => a + b.count, 0),
-        weekly: tripLog.filter(l => now - l.ts < weekMs).reduce((a, b) => a + b.count, 0),
-        monthly: tripLog.filter(l => now - l.ts < monthMs).reduce((a, b) => a + b.count, 0)
+        daily: tripLog.filter(l => l.ts >= todayStart).reduce((a, b) => a + b.count, 0),
+        weekly: tripLog.filter(l => l.ts >= weekStart).reduce((a, b) => a + b.count, 0),
+        monthly: tripLog.filter(l => l.ts >= monthStart).reduce((a, b) => a + b.count, 0)
     };
 
     document.getElementById('stat-daily').textContent = stats.daily;

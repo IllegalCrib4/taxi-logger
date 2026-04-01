@@ -284,7 +284,8 @@ textarea { font-family: 'JetBrains Mono', monospace; line-height: 1.5; resize: n
 .btn-ghost { background: transparent; color: var(--text-muted); }
 .btn-ghost:hover { color: white; }
 .btn-sm { padding: 0.35rem 0.6rem; font-size: 0.7rem; }
-.btn-discord { background: var(--primary); color: white; }
+.btn-discord { background: #5865f2; color: white; }
+.btn-discord:hover { background: #4752c4; }
 .btn-text { background: none; border: none; font-size: 0.75rem; font-weight: 700; cursor: pointer; }
 .btn-text.danger { color: var(--danger); }
 
