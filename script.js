@@ -47,27 +47,52 @@ const serverMapHints = {
 
 // Data State
 let selectedMap = localStorage.getItem('taxiSelectedMap') || 'Chernarus';
-let suggestions = JSON.parse(localStorage.getItem('taxiSuggestions')) || { servers: [], locations: [], players: [] };
-let savedAds = JSON.parse(localStorage.getItem('taxiSavedAds')) || [
+
+let suggestions = { servers: [], locations: [], players: [] };
+try {
+    const saved = localStorage.getItem('taxiSuggestions');
+    if (saved) suggestions = JSON.parse(saved);
+} catch (e) { console.error("Error parsing suggestions", e); }
+
+let savedAds = [
     { 
         name: "Ad Suggestion", 
         content: "TAXI SERVICE AVAILABLE|Just say: Taxi where you are and where you want to go! We can go anywhere but BM!"
     }
 ];
-let dispatchHistory = JSON.parse(localStorage.getItem('taxiDispatchHistory')) || [];
-let tripLog = JSON.parse(localStorage.getItem('taxiTripLog')) || [];
+try {
+    const saved = localStorage.getItem('taxiSavedAds');
+    if (saved) savedAds = JSON.parse(saved);
+} catch (e) { console.error("Error parsing savedAds", e); }
+
+let dispatchHistory = [];
+try {
+    const saved = localStorage.getItem('taxiDispatchHistory');
+    if (saved) dispatchHistory = JSON.parse(saved);
+} catch (e) { console.error("Error parsing dispatchHistory", e); }
+
+let tripLog = [];
+try {
+    const saved = localStorage.getItem('taxiTripLog');
+    if (saved) tripLog = JSON.parse(saved);
+} catch (e) { console.error("Error parsing tripLog", e); }
+
 let rideQueue = [];
 
 // Initialization
 document.addEventListener('DOMContentLoaded', () => {
-    initTheme();
-    initServerSelector();
-    initSuggestions();
-    initMultiInputs();
-    updateStatsUI();
-    updateAdsUI();
-    updateHistoryUI();
-    setupEventListeners();
+    try {
+        initTheme();
+        initServerSelector();
+        initSuggestions();
+        initMultiInputs();
+        updateStatsUI();
+        updateAdsUI();
+        updateHistoryUI();
+        setupEventListeners();
+    } catch (err) {
+        console.error("Initialization Error:", err);
+    }
 });
 
 function initTheme() {
@@ -173,25 +198,29 @@ function setupEventListeners() {
     });
 
     // Form & Multi-Ride
-    document.getElementById('taxi-form').addEventListener('submit', handleSingleRide);
-    document.getElementById('add-ride-btn').addEventListener('click', addToQueue);
-    document.getElementById('generate-all-btn').addEventListener('click', generateMultiDispatch);
+    document.getElementById('taxi-form')?.addEventListener('submit', handleSingleRide);
+    document.getElementById('add-ride-btn')?.addEventListener('click', addToQueue);
+    document.getElementById('generate-all-btn')?.addEventListener('click', generateMultiDispatch);
 
     // Output Controls
-    document.getElementById('copy-output-btn').addEventListener('click', (e) => copyToClipboard('output-box', e.target));
-    document.getElementById('clear-output-btn').addEventListener('click', () => document.getElementById('output-box').value = '');
+    document.getElementById('copy-output-btn')?.addEventListener('click', (e) => copyToClipboard('output-box', e.target));
+    document.getElementById('clear-output-btn')?.addEventListener('click', () => {
+        const ob = document.getElementById('output-box');
+        if (ob) ob.value = '';
+    });
     
     // Discord Controls
-    document.getElementById('copy-discord-btn').addEventListener('click', (e) => copyToClipboard('discord-input', e.target));
-    document.getElementById('clear-discord-btn').addEventListener('click', () => {
-        document.getElementById('discord-input').value = '';
+    document.getElementById('copy-discord-btn')?.addEventListener('click', (e) => copyToClipboard('discord-input', e.target));
+    document.getElementById('clear-discord-btn')?.addEventListener('click', () => {
+        const di = document.getElementById('discord-input');
+        if (di) di.value = '';
         renderDiscordPreview();
     });
     document.getElementById('discord-input')?.addEventListener('input', renderDiscordPreview);
 
     // Global Actions
-    document.getElementById('clear-history-btn').addEventListener('click', clearHistory);
-    document.getElementById('add-new-ad-btn').addEventListener('click', addNewAd);
+    document.getElementById('clear-history-btn')?.addEventListener('click', clearHistory);
+    document.getElementById('add-new-ad-btn')?.addEventListener('click', addNewAd);
     document.getElementById('reset-stats-btn')?.addEventListener('click', resetStats);
     document.getElementById('factory-reset-btn')?.addEventListener('click', () => {
         if(confirm("Are you sure? This will wipe ALL history, suggestions, and settings for your video.")) {
