@@ -86,8 +86,12 @@
                                                 <input type="text" id="pickup" placeholder="From?" required>
                                             </div>
                                             <div class="input-group">
-                                                <label>Dropoff</label>
-                                                <input type="text" id="dropoff" placeholder="To?" required>
+                                                <label>Dropoff(s) <button type="button" id="add-dropoff-btn" class="btn-text" style="color:var(--primary); font-size:1.1rem; padding:0 5px;" title="Add Destination">+</button></label>
+                                                <div id="dropoff-container" class="multi-input-stack">
+                                                    <div class="multi-input-row">
+                                                        <input type="text" class="dropoff-input" placeholder="To?" required>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
                                         <div class="input-group">

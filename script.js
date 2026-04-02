@@ -63,6 +63,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initTheme();
     initServerSelector();
     initSuggestions();
+    initMultiInputs();
     updateStatsUI();
     updateAdsUI();
     updateHistoryUI();
@@ -241,7 +242,7 @@ function addToQueue() {
     rideQueue.push(data);
     updateQueueUI();
     saveSuggestions(data);
-    clearInputs(['pickup', 'dropoff', 'players']);
+    clearInputs(['pickup', 'players']);
 }
 
 function generateMultiDispatch() {
@@ -257,7 +258,8 @@ function generateMultiDispatch() {
 }
 
 function formatRide(ride) {
-    return `Server : ${ride.server}\nPickup : ${ride.pickup}\nDropoff : ${ride.dropoff}\nPlayer(s) : ${ride.players}`;
+    const formattedDropoff = (ride.dropoff || "").split(/[,;]+/).map(d => d.trim()).filter(d => d).join(' ➡️ ');
+    return `Server : ${ride.server}\nPickup : ${ride.pickup}\nDropoff : ${formattedDropoff}\nPlayer(s) : ${ride.players}`;
 }
 
 function updateOutput(text, append = false) {
@@ -431,17 +433,20 @@ function updateStatsUI() {
 // --- UTILS ---
 
 function getFormData() {
+    const dropoffInputs = Array.from(document.querySelectorAll('.dropoff-input'));
+    const dropoffValues = dropoffInputs.map(i => i.value.trim()).filter(v => v);
+    
     return {
         server: document.getElementById('server').value.trim(),
         pickup: document.getElementById('pickup').value.trim(),
-        dropoff: document.getElementById('dropoff').value.trim(),
+        dropoff: dropoffValues.join(','), // Join with comma for formatRide to handle
         players: document.getElementById('players').value.trim()
     };
 }
 
 function validateData(data) {
     if (!data.server || !data.pickup || !data.dropoff || !data.players) {
-        alert("Please fill in all fields.");
+        alert("Please fill in all fields (Server, Pickup, at least one Dropoff, and Players).");
         return false;
     }
     return true;
@@ -455,6 +460,24 @@ function clearInputs(ids) {
             el.removeAttribute('list');
         }
     });
+    
+    // Clear extra dropoffs and reset container
+    const container = document.getElementById('dropoff-container');
+    if (container) {
+        const rows = Array.from(container.querySelectorAll('.multi-input-row'));
+        // Keep only the first row
+        rows.forEach((row, index) => {
+            if (index === 0) {
+                const input = row.querySelector('input');
+                if (input) {
+                    input.value = '';
+                    input.removeAttribute('list');
+                }
+            } else {
+                row.remove();
+            }
+        });
+    }
 }
 
 function copyToClipboard(elementId, btn) {
@@ -516,6 +539,53 @@ function updateDatalists(isEmpty = false) {
     populate('location-list', allLocations);
     
     populate('player-list', suggestions.players);
+}
+
+function initMultiInputs() {
+    const addBtn = document.getElementById('add-dropoff-btn');
+    const container = document.getElementById('dropoff-container');
+    
+    if (addBtn && container) {
+        addBtn.addEventListener('click', () => {
+            const row = document.createElement('div');
+            row.className = 'multi-input-row';
+            row.innerHTML = `
+                <input type="text" class="dropoff-input" placeholder="Next Destination" required>
+                <button type="button" class="btn-remove-input" title="Remove Destination">×</button>
+            `;
+            container.appendChild(row);
+            
+            // Focus new input
+            row.querySelector('input').focus();
+            
+            // Add removal listener
+            row.querySelector('.btn-remove-input').addEventListener('click', () => {
+                row.remove();
+            });
+            
+            // Add suggestion listener to new input
+            const input = row.querySelector('input');
+            input.addEventListener('input', () => {
+                if (input.value.trim().length > 0) {
+                    input.setAttribute('list', 'location-list');
+                } else {
+                    input.removeAttribute('list');
+                }
+            });
+        });
+        
+        // Setup initial input
+        const initialInput = container.querySelector('.dropoff-input');
+        if (initialInput) {
+            initialInput.addEventListener('input', () => {
+                if (initialInput.value.trim().length > 0) {
+                    initialInput.setAttribute('list', 'location-list');
+                } else {
+                    initialInput.removeAttribute('list');
+                }
+            });
+        }
+    }
 }
 
 // Global actions for onclick

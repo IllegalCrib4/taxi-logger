@@ -250,6 +250,32 @@ body {
 .input-group { display: flex; flex-direction: column; gap: 0.5rem; }
 .input-group label { font-size: 0.7rem; font-weight: 800; color: var(--text-label); text-transform: uppercase; }
 
+.multi-input-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.multi-input-row {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.multi-input-row input {
+    flex-grow: 1;
+}
+
+.btn-remove-input {
+    background: transparent;
+    border: none;
+    color: var(--danger);
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 0 5px;
+    line-height: 1;
+}
+
 input[type="text"], textarea {
     width: 100%; /* Ensure boxes fill the container */
     background: var(--bg-input);
