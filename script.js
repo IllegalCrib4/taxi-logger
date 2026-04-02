@@ -51,7 +51,14 @@ let selectedMap = localStorage.getItem('taxiSelectedMap') || 'Chernarus';
 let suggestions = { servers: [], locations: [], players: [] };
 try {
     const saved = localStorage.getItem('taxiSuggestions');
-    if (saved) suggestions = JSON.parse(saved);
+    if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed && typeof parsed === 'object') {
+            suggestions.servers = Array.isArray(parsed.servers) ? parsed.servers : [];
+            suggestions.locations = Array.isArray(parsed.locations) ? parsed.locations : [];
+            suggestions.players = Array.isArray(parsed.players) ? parsed.players : [];
+        }
+    }
 } catch (e) { console.error("Error parsing suggestions", e); }
 
 let savedAds = [
@@ -62,19 +69,42 @@ let savedAds = [
 ];
 try {
     const saved = localStorage.getItem('taxiSavedAds');
-    if (saved) savedAds = JSON.parse(saved);
+    if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) {
+            savedAds = parsed.map(ad => {
+                if (ad && typeof ad === 'object') {
+                    return {
+                        name: ad.name || 'Ad Suggestion',
+                        content: ad.content || ''
+                    };
+                }
+                return { name: 'Ad Suggestion', content: String(ad || '') };
+            });
+        }
+    }
 } catch (e) { console.error("Error parsing savedAds", e); }
 
 let dispatchHistory = [];
 try {
     const saved = localStorage.getItem('taxiDispatchHistory');
-    if (saved) dispatchHistory = JSON.parse(saved);
+    if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) {
+            dispatchHistory = parsed.filter(item => item && typeof item === 'object');
+        }
+    }
 } catch (e) { console.error("Error parsing dispatchHistory", e); }
 
 let tripLog = [];
 try {
     const saved = localStorage.getItem('taxiTripLog');
-    if (saved) tripLog = JSON.parse(saved);
+    if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) {
+            tripLog = parsed.filter(item => item && typeof item === 'object');
+        }
+    }
 } catch (e) { console.error("Error parsing tripLog", e); }
 
 let rideQueue = [];
@@ -293,6 +323,7 @@ function formatRide(ride) {
 
 function updateOutput(text, append = false) {
     const outputBox = document.getElementById('output-box');
+    if (!outputBox) return false;
     
     const wasEmpty = !outputBox.value.trim();
     const willAppend = append && !wasEmpty;
@@ -311,6 +342,7 @@ function updateOutput(text, append = false) {
 function updateQueueUI() {
     const container = document.getElementById('ride-list-container');
     const list = document.getElementById('ride-list');
+    if (!container || !list) return;
     
     if (rideQueue.length === 0) {
         container.style.display = 'none';
@@ -338,6 +370,7 @@ window.removeFromQueue = (index) => {
 
 function updateHistoryUI() {
     const container = document.getElementById('history-list');
+    if (!container) return;
     container.innerHTML = '';
     
     if (dispatchHistory.length === 0) {
@@ -373,6 +406,7 @@ function updateHistoryUI() {
 
 function updateAdsUI() {
     const container = document.getElementById('ads-list');
+    if (!container) return;
     container.innerHTML = '';
     
     savedAds.forEach((ad, index) => {
@@ -380,13 +414,16 @@ function updateAdsUI() {
         div.className = 'ad-item';
         const charCount = (ad.content || "").length;
         div.innerHTML = `
-            <div class="ad-header-row" style="padding-top: 1rem;">
-                <h4 style="margin: 0; font-size: 1.1rem; color: white;">${ad.name || 'Ad Suggestion'}</h4>
-                <button class="btn-text danger ad-delete-btn" onclick="deleteAd(${index})" style="font-size: 1.5rem; color: #ef4444;">×</button>
+            <div class="ad-header-row">
+                <input type="text" value="${ad.name || ''}" placeholder="Ad Name" onchange="updateAd(${index}, 'name', this.value)">
+                <button class="ad-delete-btn" onclick="deleteAd(${index})">×</button>
             </div>
-            <div class="ad-item-content" style="padding-top: 0.5rem;">
-                <textarea maxlength="125" oninput="updateCharCount(this, ${index})" onchange="updateAd(${index}, 'content', this.value)" style="background: transparent; border: 1px solid var(--border-color); border-radius: 8px; color: white; padding: 1rem; min-height: 120px;">${ad.content}</textarea>
-                <div class="ad-char-counter" style="text-align: right; margin-top: 0.5rem; font-size: 0.75rem; font-weight: 800; color: var(--text-label);">CHARACTERS: <span>${charCount}</span> / 125</div>
+            <div class="ad-item-content">
+                <textarea maxlength="125" oninput="updateCharCount(this, ${index})" onchange="updateAd(${index}, 'content', this.value)">${ad.content}</textarea>
+                <div class="ad-char-counter">CHARACTERS: <span>${charCount}</span> / 125</div>
+            </div>
+            <div class="ad-footer">
+                <button class="btn btn-primary btn-sm" onclick="copyAd(${index}, this)">Copy Ad</button>
             </div>
         `;
         container.appendChild(div);
@@ -394,7 +431,7 @@ function updateAdsUI() {
 }
 
 window.updateCharCount = (el, index) => {
-    const counter = el.parentElement.querySelector('.ad-char-counter span');
+    const counter = el?.parentElement?.querySelector('.ad-char-counter span');
     if (counter) {
         const count = el.value.length;
         counter.textContent = count;
@@ -454,9 +491,12 @@ function updateStatsUI() {
         monthly: tripLog.filter(l => l.ts >= monthStart).reduce((a, b) => a + b.count, 0)
     };
 
-    document.getElementById('stat-daily').textContent = stats.daily;
-    document.getElementById('stat-weekly').textContent = stats.weekly;
-    document.getElementById('stat-monthly').textContent = stats.monthly;
+    const d = document.getElementById('stat-daily');
+    if (d) d.textContent = stats.daily;
+    const w = document.getElementById('stat-weekly');
+    if (w) w.textContent = stats.weekly;
+    const m = document.getElementById('stat-monthly');
+    if (m) m.textContent = stats.monthly;
 }
 
 // --- UTILS ---
@@ -466,10 +506,10 @@ function getFormData() {
     const dropoffValues = dropoffInputs.map(i => i.value.trim()).filter(v => v);
     
     return {
-        server: document.getElementById('server').value.trim(),
-        pickup: document.getElementById('pickup').value.trim(),
+        server: document.getElementById('server')?.value?.trim() || '',
+        pickup: document.getElementById('pickup')?.value?.trim() || '',
         dropoff: dropoffValues.join(','), // Join with comma for formatRide to handle
-        players: document.getElementById('players').value.trim()
+        players: document.getElementById('players')?.value?.trim() || ''
     };
 }
 
@@ -511,6 +551,7 @@ function clearInputs(ids) {
 
 function copyToClipboard(elementId, btn) {
     const el = document.getElementById(elementId);
+    if (!el) return;
     el.select();
     navigator.clipboard.writeText(el.value).then(() => {
         showButtonFeedback(btn, 'Copied!');
@@ -518,6 +559,7 @@ function copyToClipboard(elementId, btn) {
 }
 
 function showButtonFeedback(btn, text) {
+    if (!btn) return;
     const oldText = btn.textContent;
     btn.textContent = text;
     btn.classList.add('btn-accent');
@@ -585,16 +627,16 @@ function initMultiInputs() {
             container.appendChild(row);
             
             // Focus new input
-            row.querySelector('input').focus();
+            row.querySelector('input')?.focus();
             
             // Add removal listener
-            row.querySelector('.btn-remove-input').addEventListener('click', () => {
+            row.querySelector('.btn-remove-input')?.addEventListener('click', () => {
                 row.remove();
             });
             
             // Add suggestion listener to new input
             const input = row.querySelector('input');
-            input.addEventListener('input', () => {
+            input?.addEventListener('input', () => {
                 if (input.value.trim().length > 0) {
                     input.setAttribute('list', 'location-list');
                 } else {

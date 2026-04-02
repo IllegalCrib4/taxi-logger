@@ -388,7 +388,7 @@ textarea { font-family: 'JetBrains Mono', monospace; line-height: 1.5; resize: n
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0.75rem 1rem 0 1.25rem;
+    padding: 1rem 1.25rem 0.5rem;
 }
 .ad-item-content {
     padding: 0.5rem 1.25rem 1.25rem;
@@ -397,15 +397,18 @@ textarea { font-family: 'JetBrains Mono', monospace; line-height: 1.5; resize: n
     flex-grow: 1;
 }
 .ad-delete-btn {
-    font-size: 1.25rem;
+    font-size: 1.5rem;
+    color: var(--danger);
     cursor: pointer;
     line-height: 1;
+    background: transparent;
+    border: none;
 }
 .ad-char-counter {
-    font-size: 0.65rem;
+    font-size: 0.75rem;
     color: var(--text-label);
     text-align: right;
-    margin-top: 0.4rem;
+    margin-top: 0.5rem;
     font-weight: 800;
     text-transform: uppercase;
 }
@@ -413,12 +416,12 @@ textarea { font-family: 'JetBrains Mono', monospace; line-height: 1.5; resize: n
     color: var(--danger);
 }
 .ad-item input { background: transparent; border: none; font-weight: 800; color: white; font-size: 1rem; flex: 1; }
-.ad-item textarea { min-height: 140px; font-size: 0.9rem; margin-bottom: 0; flex-grow: 1; background: var(--bg-input); border: 1px solid var(--border-color); color: white; padding: 0.75rem; border-radius: var(--radius-sm); }
+.ad-item textarea { min-height: 120px; font-size: 0.9rem; margin-bottom: 0; flex-grow: 1; background: var(--bg-input); border: 1px solid var(--border-color); color: white; padding: 1rem; border-radius: var(--radius-sm); }
 .ad-footer {
     padding: 0.75rem 1.25rem;
     background: var(--bg-sidebar);
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-end;
     align-items: center;
     border-top: 1px solid var(--border-color);
 }
